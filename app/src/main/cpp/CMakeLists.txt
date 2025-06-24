@@ -47,7 +47,6 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         src/xhook/xh_util.c
         src/xhook/xh_version.c
         src/xhook/xhook.c
-        src/elf_util.cpp
 )
 
 # Specifies libraries CMake should link to your target library. You
@@ -59,10 +58,7 @@ find_package(lsplant REQUIRED CONFIG)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
-        xz_embedded
         fmt
-        #dobby::dobby
-        #lsplant::lsplant
         android
         EGL
         GLESV3
