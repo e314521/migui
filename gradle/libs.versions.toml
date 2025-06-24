@@ -4,16 +4,29 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.1"
+lsplantStandalone = "6.4"
 material = "1.12.0"
 constraintlayout = "2.2.1"
+yahfa = "0.11.1"
+appcompatVersion = "1.7.1"
+dobby = "1.2"
+dobbyVersion = "1.2"
+lsplant = "v6.5.1"
+activity = "1.10.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+lsplant-standalone = { module = "org.lsposed.lsplant:lsplant-standalone", version.ref = "lsplantStandalone" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompatVersion" }
+dobby = { group = "io.github.vvb2060.ndk", name = "dobby", version.ref = "dobby" }
+lsplant = { group = "com.github.e314521", name = "LSPlant", version.ref = "lsplant" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

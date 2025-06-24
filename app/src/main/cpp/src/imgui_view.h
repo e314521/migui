@@ -5,7 +5,7 @@
 #ifndef IMGUI_DEMO_IMGUI_VIEW_H
 #define IMGUI_DEMO_IMGUI_VIEW_H
 
-#include "log.h"
+#include "logging.h"
 
 
 #include <thread>
@@ -18,7 +18,7 @@
 #include "external-lib/ImGui/imgui_impl_opengl3.h"
 #include "external-lib/ImGui/imgui_impl_android.h"
 #include "android/native_window_jni.h"
-
+using namespace std;
 class imgui_view {
     std::condition_variable cond;
     std::mutex              Threadlk;

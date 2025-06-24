@@ -46,7 +46,7 @@ tasks.register("mergeJars") {
     dependsOn("assembleDebug")
     doLast{
         println(layout.buildDirectory.dir("intermediates\\javac\\debug\\compileDebugJavaWithJavac\\classes\\com\\imgui\\ImGuiView.class").get())
-        val dexPath = layout.buildDirectory.dir("intermediates\\javac\\debug\\compileDebugJavaWithJavac\\classes\\com\\imgui\\*.class").get()
+        //val dexPath = layout.buildDirectory.dir("intermediates\\javac\\debug\\compileDebugJavaWithJavac\\classes\\com\\imgui\\*.class").get()
         val androidpath = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
         val dxPath = "${android.sdkDirectory.path}/build-tools/${android.buildToolsVersion}\\d8.bat"
 

@@ -13,6 +13,14 @@
 #include <string>
 #include "imgui_view.h"
 #include "dex_data.h"
+//#include <lsplant.hpp>
+
+//#include "xz.h"
+
+
+#include <sys/mman.h>
+//#include <dobby.h>
+#include "elf_util.h"
 
 imgui_view       *mView   = nullptr;
 
@@ -160,6 +168,31 @@ jobject getThreadClassLoader(JNIEnv* env) {
 }
 
 
+#define _uintval(p)               reinterpret_cast<uintptr_t>(p)
+#define _ptr(p)                   reinterpret_cast<void *>(p)
+#define _align_up(x, n)           (((x) + ((n) - 1)) & ~((n) - 1))
+#define _align_down(x, n)         ((x) & -(n))
+#define _page_size                4096
+#define _page_align(n)            _align_up(static_cast<uintptr_t>(n), _page_size)
+#define _ptr_align(x)             _ptr(_align_down(reinterpret_cast<uintptr_t>(x), _page_size))
+#define _make_rwx(p, n)           ::mprotect(_ptr_align(p), \
+                                              _page_align(_uintval(p) + n) != _page_align(_uintval(p)) ? _page_align(n) + _page_size : _page_align(n), \
+                                              PROT_READ | PROT_WRITE | PROT_EXEC)
+/*void* InlineHooker(void* target, void* hooker) {
+    _make_rwx(target, _page_size);
+    void* origin_call;
+    if (DobbyHook(target, hooker, &origin_call) == RS_SUCCESS) {
+        return origin_call;
+    } else {
+        return nullptr;
+    }
+}
+
+bool InlineUnhooker(void* func) {
+    return DobbyDestroy(func) == RT_SUCCESS;
+}*/
+
+
 
 extern "C"
 {
@@ -200,17 +233,31 @@ extern "C"
 
 
     }
+
     static JNINativeMethod methods[] = {
             {"jniSurfaceCreate", "(Landroid/view/Surface;IIFF)V", (void*)Java_com_imgui_ImGuiView_jniSurfaceCreate},
             {"jniSurfaceChanged", "(II)V", (void*)Java_com_imgui_ImGuiView_jniSurfaceChanged},
             {"jniSurfaceDestroyed", "()V", (void*)Java_com_imgui_ImGuiView_jniSurfaceDestroyed}
     };
+
     jint JNIEXPORT JNI_OnLoad(JavaVM *vm, void *key) {
+
         LOGE("JNI_OnLoad");
         JNIEnv* env;
         if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
             return JNI_ERR;
         }
+        /*auto art = SandHook::ElfImg("libart.so");
+        lsplant::InitInfo initInfo{
+                .inline_hooker = InlineHooker,
+                .inline_unhooker = InlineUnhooker,
+                .art_symbol_resolver = []( std::string_view symbol) {
+                    return SandHook::ElfImg("/libart.so").getSymbAddress(symbol);},.art_symbol_prefix_resolver = [](auto symbol) {
+                    return SandHook::ElfImg("/libart.so").getSymbPrefixFirstAddress(symbol);
+                }
+        };
+        bool init_result = lsplant::Init(env, initInfo);*/
+
 
         jobject context = getGlobalContext(env);
         jstring CacheDirStr = getCacheDir(env,context);
@@ -257,7 +304,7 @@ extern "C"
         if (env->RegisterNatives(ImGuiView, methods,sizeof(methods)/sizeof(methods[0])) < 0) {
             return JNI_ERR;
         }
-
+        env->CallStaticVoidMethod(ImGuiView, constructor, NULL);
         return JNI_VERSION_1_6;
     }
 };

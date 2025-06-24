@@ -11,12 +11,13 @@ static bool RunInitImgui;
   ret my##func(__VA_ARGS__)
 HOOK(void, Input, void *thiz, void *ex_ab, void *ex_ac) {
     origInput(thiz, ex_ab, ex_ac);
-    ImGui_ImplAndroid_HandleInputEvent((AInputEvent *)thiz);
+    if(RunInitImgui)
+        ImGui_ImplAndroid_HandleInputEvent((AInputEvent *)thiz);
     return;
 }
 
 imgui_view::imgui_view() {
-    LOGE("imgui_view");
+    LOGD("imgui_view");
     mEglDisplay = EGL_NO_DISPLAY;
     mEglSurface = EGL_NO_SURFACE;
     mEglConfig  = nullptr;
@@ -28,7 +29,7 @@ imgui_view::imgui_view() {
 }
 
 void imgui_view::onSurfaceCreate(JNIEnv *env, jobject surface, int SurfaceWidth, int SurfaceHigh){
-    LOGE("onSurfaceCreate");
+    LOGD("onSurfaceCreate");
 
     this->SurfaceWin       = ANativeWindow_fromSurface(env, surface);
     this->surfaceWidth     = SurfaceWidth;
@@ -37,7 +38,7 @@ void imgui_view::onSurfaceCreate(JNIEnv *env, jobject surface, int SurfaceWidth,
     this->surfaceHighHalf  = this->surfaceHigh / 2;
     SurfaceThread = new std::thread([this] { EglThread(); });
     SurfaceThread->detach();
-    LOGE("onSurfaceCreate_end");
+    LOGD("onSurfaceCreate_end");
 }
 void imgui_view::onSurfaceChange(int SurfaceWidth, int SurfaceHigh){
     this->surfaceWidth     = SurfaceWidth;
@@ -45,10 +46,10 @@ void imgui_view::onSurfaceChange(int SurfaceWidth, int SurfaceHigh){
     this->surfaceWidthHalf = this->surfaceWidth / 2;
     this->surfaceHighHalf  = this->surfaceHigh / 2;
     this->isChage          = true;
-    LOGE("onSurfaceChange");
+    LOGD("onSurfaceChange");
 }
 void imgui_view::onSurfaceDestroy(){
-    LOGE("onSurfaceDestroy");
+    LOGD("onSurfaceDestroy");
     this->isDestroy = true;
     std::unique_lock<std::mutex> ulo(Threadlk);
     cond.wait(ulo, [this] { return !this->ThreadIo; });
@@ -75,60 +76,61 @@ void imgui_view::onSurfaceDestroy(){
     mEglSurface = EGL_NO_SURFACE;
     mEglContext = EGL_NO_CONTEXT;
     ANativeWindow_release(SurfaceWin);
-    LOGE("onSurfaceDestroy end");
+    LOGD("onSurfaceDestroy end");
 }
 
 int imgui_view::initEgl() {
     //1、
     mEglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (mEglDisplay == EGL_NO_DISPLAY) {
-        LOGE("eglGetDisplay error=%u", glGetError());
+        LOGD("eglGetDisplay error=%u", glGetError());
         return -1;
     }
-    LOGE("生成mEglDisplay");
+    LOGD("生成mEglDisplay");
     //2、
     EGLint *version = new EGLint[2];
     if (!eglInitialize(mEglDisplay, &version[0], &version[1])) {
-        LOGE("eglInitialize error=%u", glGetError());
+        LOGD("eglInitialize error=%u", glGetError());
         return -1;
     }
-    LOGE("eglInitialize成功");
+    LOGD("eglInitialize成功");
     //3、
     const EGLint attribs[] = {EGL_BUFFER_SIZE, 32, EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8,
                               EGL_BLUE_SIZE, 8, EGL_ALPHA_SIZE, 8, EGL_DEPTH_SIZE, 8, EGL_STENCIL_SIZE, 8, EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE};
 
     EGLint num_config;
     if (!eglGetConfigs(mEglDisplay, NULL, 1, &num_config)) {
-        LOGE("eglGetConfigs  error =%u", glGetError());
+        LOGD("eglGetConfigs  error = {}", glGetError());
         return -1;
     }
-    LOGE("num_config=%d", num_config);
+    LOGD("eglGetConfigs  error = {}", glGetError());
+
     // 4、
     if (!eglChooseConfig(mEglDisplay, attribs, &mEglConfig, 1, &num_config)) {
-        LOGE("eglChooseConfig  error=%u", glGetError());
+        LOGD("eglChooseConfig  error= {}", glGetError());
         return -1;
     }
-    LOGE("eglChooseConfig成功");
+    LOGD("eglChooseConfig成功");
     //5、
     int attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
     mEglContext = eglCreateContext(mEglDisplay, mEglConfig, EGL_NO_CONTEXT, attrib_list);
     if (mEglContext == EGL_NO_CONTEXT) {
-        LOGE("eglCreateContext  error = %u", glGetError());
+        LOGD("eglCreateContext  error = {}", glGetError());
         return -1;
     }
     // 6、
     mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig, SurfaceWin, NULL);
     if (mEglSurface == EGL_NO_SURFACE) {
-        LOGE("eglCreateWindowSurface  error = %u", glGetError());
+        LOGD("eglCreateWindowSurface  error = {}", glGetError());
         return -1;
     }
-    LOGE("eglCreateWindowSurface成功");
+    LOGD("eglCreateWindowSurface成功");
     //7、
     if (!eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext)) {
-        LOGE("eglMakeCurrent  error = %u", glGetError());
+        LOGD("eglMakeCurrent  error = {}", glGetError());
         return -1;
     }
-    LOGE("eglMakeCurrent成功");
+    LOGD("eglMakeCurrent成功");
     return 1;
 }
 int imgui_view::initImgui(){
@@ -148,12 +150,12 @@ int imgui_view::initImgui(){
     io->IniSavingRate = 10.0f;
 
     if(!ImGui_ImplAndroid_Init(SurfaceWin)){
-        LOGE("ImGui_ImplAndroid_Init  error");
+        LOGD("ImGui_ImplAndroid_Init  error");
         return -1;
     }
 
     if(!ImGui_ImplOpenGL3_Init("#version 300 es")){
-        LOGE("ImGui_ImplOpenGL3_Init  error");
+        LOGD("ImGui_ImplOpenGL3_Init  error");
         return -1;
     }
 
@@ -171,16 +173,16 @@ int imgui_view::initImgui(){
 }
 
 void imgui_view::EglThread(){
-    LOGE("imgui线程开始");
+    LOGD("imgui线程开始");
     if(this->initEgl() != 1){
-        LOGE("Egl初始化失败");
+        LOGD("Egl初始化失败");
         return;
     }
-    LOGE("Egl初始化完成");
+    LOGD("Egl初始化完成");
     if(this->initImgui() != 1){
-        LOGE("imgui初始化失败!");
+        LOGD("imgui初始化失败!");
     }
-    LOGE("imgui初始化完成");
+    LOGD("imgui初始化完成");
     ThreadIo = true;
 
     while (true) {
@@ -220,7 +222,7 @@ void imgui_view::EglThread(){
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         if(!eglSwapBuffers(mEglDisplay, mEglSurface)){
-            LOGE("eglSwapBuffers  error = %u", glGetError());
+            LOGD("eglSwapBuffers  error = {}", glGetError());
         }
     }
 

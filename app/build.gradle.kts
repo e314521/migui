@@ -9,14 +9,13 @@ android {
     defaultConfig {
         applicationId = "com.imgui"
         minSdk = 24
-        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags += "-std=c++17"
+                cppFlags += "-std=c++23"
             }
         }
     }
@@ -37,11 +36,12 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
+            version = "3.28.0+"
         }
     }
     buildFeatures {
         viewBinding = true
+        prefab = true
     }
 }
 
@@ -51,15 +51,17 @@ tasks.named("preBuild") {
     dependsOn(":ImGuiView:mergeJars")
     dependsOn(":ImGuiView:pythonToC")
 
+
 }
-
-
 
 dependencies {
 
-    implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.lsplant.standalone)
+    implementation(libs.dobby)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -5,11 +5,16 @@
 # Sets the minimum CMake version required for this project.
 cmake_minimum_required(VERSION 3.22.1)
 
+
+
 # Declares the project name. The project name can be accessed via ${ PROJECT_NAME},
 # Since this is the top level CMakeLists.txt, the project name is also accessible
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
 project("imgui")
+add_subdirectory(${EXTERNAL_ROOT} external)
+
+
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -42,13 +47,22 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         src/xhook/xh_util.c
         src/xhook/xh_version.c
         src/xhook/xhook.c
+        src/elf_util.cpp
 )
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
+
+find_package(dobby REQUIRED CONFIG)
+find_package(lsplant REQUIRED CONFIG)
+
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
+        xz_embedded
+        fmt
+        #dobby::dobby
+        #lsplant::lsplant
         android
         EGL
         GLESV3
