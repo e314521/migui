@@ -27,7 +27,7 @@
 #include <array>
 
 #ifndef LOG_TAG
-#define LOG_TAG    "Imgui"
+#define LOG_TAG    "ImGuiView"
 #endif
 
 #ifdef LOG_DISABLED

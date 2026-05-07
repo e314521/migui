@@ -197,53 +197,70 @@ jobject getThreadClassLoader(JNIEnv* env) {
 
 extern "C"
 {
-    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_jniSurfaceCreate(JNIEnv *env, jclass clazz, jobject surface, jint width, jint high, jfloat x, jfloat y){
-        if(mView == nullptr){
-            mView = new imgui_view;
-        }
-        mView->off_x = x;
-        mView->off_y = y;
-        mView->onSurfaceCreate(env, surface, width, high);
-        mView->ActivityState= true;
+//    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_jniSurfaceCreate(JNIEnv *env, jclass clazz, jobject surface, jint width, jint high, jfloat x, jfloat y){
+//        if(mView == nullptr){
+//            mView = new imgui_view;
+//        }
+//        mView->off_x = x;
+//        mView->off_y = y;
+//        mView->onSurfaceCreate(env, surface, width, high);
+//        mView->ActivityState= true;
+//
+//    }
+//    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_jniSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint high){
+//        if (mView != nullptr) {
+//            mView->onSurfaceChange(width, high);
+//        }
+//    }
+//    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_jniSurfaceDestroyed(JNIEnv *env, jclass clazz){
+//        if (mView != nullptr) {
+//            mView->ActivityState= false;
+//            mView->onSurfaceDestroy();
+//        }
+//    }
+//    JNIEXPORT jclass JNICALL  Java_com_imgui_ImGuiView_createImGuiViewClass(JNIEnv *env, jclass clazz, jobject activity){
+//
+//        return nullptr;
+//    }
+//    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_createImGui(JNIEnv *env, jclass clazz, jobject activity){
+//
+//        jclass ImGuiView = DexLoaderClass(env, getThreadClassLoader(env),env->NewStringUTF("com.imgui.ImGuiView"));
+//        jmethodID constructor = env->GetStaticMethodID(
+//                ImGuiView,
+//                "CreateImGuiView",
+//                "(Landroid/app/Activity;)V"
+//        );
+//        env->CallStaticVoidMethod(ImGuiView, constructor, activity);
+//
+//
+//    }
 
-    }
-    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_jniSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint high){
-        if (mView != nullptr) {
-            mView->onSurfaceChange(width, high);
-        }
-    }
-    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_jniSurfaceDestroyed(JNIEnv *env, jclass clazz){
-        if (mView != nullptr) {
-            mView->ActivityState= false;
-            mView->onSurfaceDestroy();
-        }
-    }
-    JNIEXPORT jclass JNICALL  Java_com_imgui_ImGuiView_createImGuiViewClass(JNIEnv *env, jclass clazz, jobject activity){
+JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnDrawFrame(JNIEnv *env, jclass clazz) {
+    // TODO: implement nativeOnDrawFrame()
+}
 
-        return nullptr;
-    }
-    JNIEXPORT void JNICALL  Java_com_imgui_ImGuiView_createImGui(JNIEnv *env, jclass clazz, jobject activity){
+JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width,
+                                                jint height) {
+    // TODO: implement nativeOnSurfaceChanged()
+}
 
-        jclass ImGuiView = DexLoaderClass(env, getThreadClassLoader(env),env->NewStringUTF("com.imgui.ImGuiView"));
-        jmethodID constructor = env->GetStaticMethodID(
-                ImGuiView,
-                "CreateImGuiView",
-                "(Landroid/app/Activity;)V"
-        );
-        env->CallStaticVoidMethod(ImGuiView, constructor, activity);
+JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceCreated(JNIEnv *env, jclass clazz, jobject surface) {
+    // TODO: implement nativeOnSurfaceCreated()
+}
 
-
-    }
+JNIEXPORT jboolean JNICALL Java_com_imgui_ImGuiView_handleTouch(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jint action) {
+    // TODO: implement handleTouch()
+}
 
     static JNINativeMethod methods[] = {
-            {"jniSurfaceCreate", "(Landroid/view/Surface;IIFF)V", (void*)Java_com_imgui_ImGuiView_jniSurfaceCreate},
-            {"jniSurfaceChanged", "(II)V", (void*)Java_com_imgui_ImGuiView_jniSurfaceChanged},
-            {"jniSurfaceDestroyed", "()V", (void*)Java_com_imgui_ImGuiView_jniSurfaceDestroyed}
+//            {"jniSurfaceCreate", "(Landroid/view/Surface;IIFF)V", (void*)Java_com_imgui_ImGuiView_jniSurfaceCreate},
+//            {"jniSurfaceChanged", "(II)V", (void*)Java_com_imgui_ImGuiView_jniSurfaceChanged},
+//            {"jniSurfaceDestroyed", "()V", (void*)Java_com_imgui_ImGuiView_jniSurfaceDestroyed}
     };
 
     jint JNIEXPORT JNI_OnLoad(JavaVM *vm, void *key) {
 
-        LOGE("JNI_OnLoad");
+        LOGE("JNI_OnLoad11");
         JNIEnv* env;
         if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
             return JNI_ERR;
@@ -271,8 +288,9 @@ extern "C"
         jmethodID constructor = env->GetStaticMethodID(
                 ImGuiView,
                 "CreateImGuiView",
-                "(Landroid/app/Activity;)V"
+                "(Landroid/content/Context;)V"
         );
+
         if (env->RegisterNatives(ImGuiView, methods,sizeof(methods)/sizeof(methods[0])) < 0) {
             return JNI_ERR;
         }
@@ -281,3 +299,4 @@ extern "C"
     }
 };
 #endif //IMGUI_DEMO_NATIVEIMGUI_H
+

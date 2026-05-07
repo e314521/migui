@@ -31,7 +31,6 @@ add_subdirectory(${EXTERNAL_ROOT} external)
 # used in the AndroidManifest.xml file.
 add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
-        pch.cpp
         src/imgui_view.cpp
         src/external-lib/ImGui/imgui.cpp
         src/external-lib/ImGui/imgui_draw.cpp
@@ -40,13 +39,6 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         src/external-lib/ImGui/imgui_demo.cpp
         src/external-lib/ImGui/imgui_impl_opengl3.cpp
         src/external-lib/ImGui/imgui_impl_android.cpp
-        src/xhook/xh_core.c
-        src/xhook/xh_elf.c
-        src/xhook/xh_jni.c
-        src/xhook/xh_log.c
-        src/xhook/xh_util.c
-        src/xhook/xh_version.c
-        src/xhook/xhook.c
 )
 
 # Specifies libraries CMake should link to your target library. You

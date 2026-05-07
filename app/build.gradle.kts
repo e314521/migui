@@ -52,6 +52,33 @@ tasks.named("preBuild") {
     dependsOn(":ImGuiView:pythonToC")
 
 
+
+}
+tasks.register("push") {
+    dependsOn("assembleDebug")
+    doLast {
+        val sdkPath = android.sdkDirectory
+        val adbPath = sdkPath.resolve("platform-tools/adb")
+        val buildDir = layout.buildDirectory.get().asFile
+        val soPath = buildDir.resolve("intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libimgui.so")
+        println(buildDir.absolutePath)
+        providers.exec {
+            commandLine(
+                adbPath.absolutePath,
+                "push",
+                soPath,
+                "/data/local/tmp/com.pinkcore.heros"
+            )
+
+            // 设置工作目录
+            workingDir = project.projectDir
+
+            // 输出日志
+            //standardOutput = System.out
+            //errorOutput = System.err
+        }.result.get()
+    }
+
 }
 
 dependencies {

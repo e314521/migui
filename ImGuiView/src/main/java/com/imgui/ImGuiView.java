@@ -1,119 +1,99 @@
 package com.imgui;
 
-import android.annotation.SuppressLint;
+
 import android.app.Activity;
-import android.graphics.PixelFormat;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
-import android.os.Looper;
 import android.util.Log;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.SurfaceHolder;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.app.AlertDialog;
+import android.os.Process;
 
+import static android.view.WindowManager.LayoutParams;
+import static android.graphics.PixelFormat.TRANSLUCENT;
+import static android.graphics.PixelFormat.TRANSPARENT;
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
 
-import androidx.annotation.NonNull;
+public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
+    private final static String TAG = "ImGuiView";
+//    private final static String TMP_PATH = "/data/local/tmp";
+//    private final static String LIB_NAME = "libimgui.so";
+//
+    static {
+        Log.d(TAG, "MyGLSurfaceView");
+        //System.load(TMP_PATH + "/" + LIB_NAME);
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+        //Log.d(TAG, "Loaded " + TMP_PATH + "/" + LIB_NAME);
+    }
 
-public class ImGuiView extends GLSurfaceView implements SurfaceHolder.Callback{
+    public ImGuiView(Context ctx) {
+        super(ctx);
 
-    static ImGuiView view;
-    @SuppressLint("PrivateApi")
-    static public void CreateImGuiViewThread(){
-        if (view != null){
+        Log.d(TAG, "MyGLSurfaceView");
+
+        if (!supportsOpenGLES3(ctx)) {
+            Log.e(TAG, "OpenGL ES 3.0 not supported on this device");
+
+            new AlertDialog.Builder(ctx)
+                    .setTitle("Error")
+                    .setMessage("This device does not support OpenGL ES 3.0")
+                    .setPositiveButton("Exit", (dialog, which) -> {
+                        ((Activity) ctx).finish();
+                        Process.killProcess(Process.myPid());
+                    }).setOnDismissListener(dialog -> {
+                        ((Activity) ctx).finish();
+                        Process.killProcess(Process.myPid());
+                    })
+                    .show();
+
             return;
         }
-        Class<?> activityThreadClass = null;
-        try {
-            activityThreadClass = Class.forName("android.app.ActivityThread");
-            Method currentActivityThreadMethod = activityThreadClass.getDeclaredMethod("currentActivityThread");
-            currentActivityThreadMethod.setAccessible(true);
-            Object activityThread = currentActivityThreadMethod.invoke(null);
-            Field activitiesField = activityThreadClass.getDeclaredField("mActivities");
-            activitiesField.setAccessible(true);
-            Map<?, ?> activities = (Map<?, ?>) activitiesField.get(activityThread);
-            // 遍历mActivities，获取栈顶Activity
-            Object topActivity = null;
-            for (Object activityRecord : activities.values()) {
-                Class<?> activityRecordClass = activityRecord.getClass();
-                Field pausedField = activityRecordClass.getDeclaredField("paused");
-                pausedField.setAccessible(true);
-                if (!(boolean) pausedField.get(activityRecord)) {
-                    Field activityField = activityRecordClass.getDeclaredField("activity");
-                    activityField.setAccessible(true);
-                    topActivity = activityField.get(activityRecord);
-                    break;
-                }
-            }
-            if(topActivity == null){
-                Thread.sleep(2000);
-                new Thread(ImGuiView::CreateImGuiViewThread).start();
-            }else{
-                Log.i("Imgui",topActivity.toString());
-                Activity a = (Activity)topActivity;
-                a.runOnUiThread(() -> {
-                    // 直接在主线程更新UI
-                    Log.i("Imgui","asdasd");
-                    view = new ImGuiView(a);
-                });
-                //view = new ImGuiView((Activity)topActivity);
 
-            }
-
-
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @SuppressLint("PrivateApi")
-    static public void CreateImGuiView(Activity activity){
-        Log.i("Imgui","asdasd");
-        new Thread(ImGuiView::CreateImGuiViewThread).start();
-
-
-        //view = new ImGuiView(activity);
-    }
-
-
-    public ImGuiView(Activity activity) {
-        super(activity.getBaseContext());
-        ViewGroup contentView = ((ViewGroup)activity.getWindow().getDecorView().getRootView());
-        contentView.addView(this);
         setEGLContextClientVersion(3);
-        setEGLConfigChooser(  8,  8,  8,  8,  16,  0);
-        setZOrderOnTop(true);//置顶
-        getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        getHolder().addCallback(this);
-        Log.i("Imgui","ImGuiView");
-    }
-    @Override
-    public void surfaceCreated(@NonNull SurfaceHolder holder) {
-        //int[] location = new int[2];
-        //getLocationOnScreen(location);
-        Log.i("Imgui","ImGuiView surfaceCreated");
-        jniSurfaceCreate(holder.getSurface(), this.getWidth(), this.getHeight(), 0, 0);
+        setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        getHolder().setFormat(TRANSPARENT);
+        setZOrderOnTop(false);
+        setRenderer(this);
+
+        startMenu(ctx);
     }
 
     @Override
-    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-        Log.i("Imgui","ImGuiView surfaceChanged");
-        jniSurfaceChanged(width,height);
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        Log.d(TAG, "onSurfaceCreated");
+
+        nativeOnSurfaceCreated(getHolder().getSurface());
     }
+
     @Override
-    public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-        Log.i("Imgui","ImGuiView surfaceDestroyed");
-        jniSurfaceDestroyed();
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        Log.d(TAG, "onSurfaceChanged");
+        nativeOnSurfaceChanged(width, height);
     }
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        //Log.d(TAG, "onDrawFrame");
+
+        nativeOnDrawFrame();
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
+        Log.d(TAG, "onTouchEvent");
 
         if (handleTouch(event.getX(), event.getY(), event.getAction()))
             return true;
@@ -122,6 +102,7 @@ public class ImGuiView extends GLSurfaceView implements SurfaceHolder.Callback{
         View rootView = ((Activity) getContext()).getWindow().getDecorView().getRootView();
         return dispatchTouchEventToRoot(rootView, event);
     }
+
     private boolean dispatchTouchEventToRoot(View rootView, MotionEvent event) {
         if (rootView instanceof ViewGroup) {
             ViewGroup rootViewGroup = (ViewGroup) rootView;
@@ -135,11 +116,40 @@ public class ImGuiView extends GLSurfaceView implements SurfaceHolder.Callback{
         }
         return false;
     }
-    public static native void jniSurfaceCreate(Surface surface, int width, int high, float x, float y);
-    public static native void jniSurfaceChanged(int width, int high);
-    public static native void jniSurfaceDestroyed();
 
-    public static native void createImGui(Activity activity);
+    private void startMenu(Context ctx) {
+        Log.d(TAG, "startMenu");
+
+        // check if the view is already added
+        if (getParent() != null) {
+            Log.d(TAG, "View already added");
+            return;
+        }
+
+        WindowManager wm = ((Activity) ctx).getWindowManager();
+        LayoutParams params = new LayoutParams(
+                MATCH_PARENT,
+                MATCH_PARENT,
+                TYPE_APPLICATION,
+                FLAG_NOT_TOUCH_MODAL | FLAG_NOT_FOCUSABLE,
+                TRANSLUCENT);
+
+        params.gravity = Gravity.TOP | Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
+
+        wm.addView(this, params);
+    }
+
+    public boolean supportsOpenGLES3(Context ctx) {
+        ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
+        ConfigurationInfo configurationInfo = am.getDeviceConfigurationInfo();
+        return (configurationInfo.reqGlEsVersion >= 0x30000);
+    }
+
+    private static native void nativeOnDrawFrame();
+
+    private static native void nativeOnSurfaceChanged(int width, int height);
+
+    private static native void nativeOnSurfaceCreated(Surface surface);
+
     private static native boolean handleTouch(float x, float y, int action);
-
 }
