@@ -15,6 +15,13 @@ HOOK(void, Input, void *thiz, void *ex_ab, void *ex_ac) {
         ImGui_ImplAndroid_HandleInputEvent((AInputEvent *)thiz);
     return;
 }
+extern "C" void renderFrame();
+extern "C"
+{
+    void renderFrame() {
+
+    }
+}
 
 imgui_view::imgui_view() {
     LOGD("imgui_view");
@@ -146,6 +153,8 @@ int imgui_view::initImgui(){
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO * io = &ImGui::GetIO();
+    //io->IniFilename =
+    
     io->SetMousePosOff(off_x,off_y);
     io->IniSavingRate = 10.0f;
 
@@ -162,13 +171,22 @@ int imgui_view::initImgui(){
     ImFontConfig font_cfg;
 
     font_cfg.SizePixels = 22.0f;
+    font_cfg.GlyphRanges = io->Fonts->GetGlyphRangesChineseFull();
 
-    io->Fonts->AddFontDefault(&font_cfg);
+    ImFont* font = io->Fonts->AddFontFromFileTTF(
+            "/system/fonts/MiSansVF.ttf",  // Android 常用中文字体路径
+            22.0f,
+            nullptr,
+            io->Fonts->GetGlyphRangesChineseFull()  // 加载全部中文字符
+    );
+
+
+    //io->Fonts->AddFontDefault(&font_cfg);
     io->MouseDoubleClickTime = 0.0001f;
     g = ImGui::GetCurrentContext();
-    ImGuiStyle * style =&ImGui::GetStyle();
-    style->ScaleAllSizes(4.0f);//缩放尺寸
-    style->FramePadding=ImVec2(10.0f,20.0f);
+    //ImGuiStyle * style =&ImGui::GetStyle();
+    //style->ScaleAllSizes(4.0f);//缩放尺寸
+    //style->FramePadding=ImVec2(10.0f,20.0f);
     return 1;
 }
 
@@ -202,21 +220,21 @@ void imgui_view::EglThread(){
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplAndroid_NewFrame();
         ImGui::NewFrame();
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        if (show_demo_window) {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        }
+        //ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        //ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        //        if (show_demo_window) {
+        //            ImGui::ShowDemoWindow(&show_demo_window);
+        //        }
 
 
-        ImGui::SetNextWindowSize(ImVec2(250 * 3, 100 * 3), 0);
-        ImGui::Begin("Hello, world!");
-        ImGui::Text("This is some useful text.");
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                    1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::Checkbox("Demo Window", &show_demo_window);
+        //ImGui::SetNextWindowSize(ImVec2(00 * 3, 00 * 3), 0);
+        //ImGui::Begin("ImGui");
+        renderFrame();
+        //ImGui::Text("This is some useful text.");
+        //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        //ImGui::Checkbox("Demo Window", &show_demo_window);
 
-        ImGui::End();
+        //ImGui::End();
 
 
         ImGui::Render();

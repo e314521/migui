@@ -35,6 +35,40 @@ jobject getGlobalContext(JNIEnv* env) {
     return env->CallObjectMethod(at, getApplication);
 }
 
+/**
+ * 获取 Application 的 ClassLoader
+ */
+jobject getApplicationClassLoader(JNIEnv* env, jobject application) {
+    if (application == nullptr) {
+        LOGE("Application is null");
+        return nullptr;
+    }
+
+    jclass contextClass = env->FindClass("android/content/Context");
+    if (contextClass == nullptr) {
+        LOGE("Failed to find Context class");
+        return nullptr;
+    }
+
+    jmethodID getClassLoader = env->GetMethodID(
+            contextClass,
+            "getClassLoader",
+            "()Ljava/lang/ClassLoader;"
+    );
+
+    if (getClassLoader == nullptr) {
+        LOGE("Failed to find getClassLoader method");
+        env->DeleteLocalRef(contextClass);
+        return nullptr;
+    }
+
+    jobject classLoader = env->CallObjectMethod(application, getClassLoader);
+
+    env->DeleteLocalRef(contextClass);
+
+    return classLoader;
+}
+
 jstring getFilePath(JNIEnv* env, jobject fileObj) {
     jclass fileClass = env->GetObjectClass(fileObj);
     jmethodID getPathMethod = env->GetMethodID(
@@ -228,23 +262,6 @@ extern "C"
             write(fd, dex_data, sizeof(dex_data));
             close(fd);
         }
-
-
-
-        // 获取系统ClassLoader
-        jclass classLoaderClass = env->FindClass("java/lang/ClassLoader");
-
-
-
-        jmethodID getSystemLoader = env->GetStaticMethodID(
-                classLoaderClass,
-                "getSystemClassLoader",
-                "()Ljava/lang/ClassLoader;"
-        );
-        jobject systemLoader = env->CallStaticObjectMethod(
-                classLoaderClass,
-                getSystemLoader
-        );
         jobject ClassLoader = getThreadClassLoader(env);
 
 

@@ -41,47 +41,76 @@ tasks.register("bundleLibRuntimeToDirDebug1") {
 }
 
 
-tasks.register("mergeJars") {
-    tasks.named("assembleDebug")
-    dependsOn("assembleDebug")
-    doLast{
-        println(layout.buildDirectory.dir("intermediates\\javac\\debug\\compileDebugJavaWithJavac\\classes\\com\\imgui\\ImGuiView.class").get())
-        //val dexPath = layout.buildDirectory.dir("intermediates\\javac\\debug\\compileDebugJavaWithJavac\\classes\\com\\imgui\\*.class").get()
-        val androidpath = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-        val dxPath = "${android.sdkDirectory.path}/build-tools/${android.buildToolsVersion}\\d8.bat"
 
-        exec {
-            commandLine(
-                dxPath,
-                "--lib",
-                androidpath,
-                "--output",
-                "build",
-                "build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/imgui/ImGuiView.class",
-            )
+tasks.register("convertToDex") {
+    dependsOn("compileReleaseJavaWithJavac")  // 确保 class 文件已编译
+
+    doLast {
+        val sdkPath = android.sdkDirectory
+        val buildToolsVersion = android.buildToolsVersion
+        val compileSdk = android.compileSdkVersion
+
+        // 构建完整的 d8 路径
+        val d8Path = sdkPath.resolve("build-tools/$buildToolsVersion/d8.bat")
+        val androidJar = sdkPath.resolve("platforms/$compileSdk/android.jar")
+
+
+        // 输入文件
+        val inputClass = layout.buildDirectory
+            .file("intermediates/javac/release/compileReleaseJavaWithJavac/classes/com/imgui/ImGuiView.class")
+            .get().asFile
+
+        // 输出目录
+        val outputDir = layout.buildDirectory.dir("d8-output").get().asFile
+
+        // 检查文件是否存在
+        if (!d8Path.exists()) {
+            throw GradleException("d8.bat not found at: ${d8Path.absolutePath}")
+        }
+
+        if (!androidJar.exists()) {
+            throw GradleException("android.jar not found at: ${androidJar.absolutePath}")
+        }
+
+        if (!inputClass.exists()) {
+            throw GradleException("Input class not found: ${inputClass.absolutePath}")
+        }
+
+        logger.lifecycle("Using d8: ${d8Path.absolutePath}")
+        logger.lifecycle("Android JAR: ${androidJar.absolutePath}")
+        logger.lifecycle("Input: ${inputClass.absolutePath}")
+
+        // 执行 d8 命令
+        try {
+            providers.exec {
+                commandLine(
+                    d8Path.absolutePath,
+                    "--lib",
+                    androidJar.absolutePath,
+                    "--output",
+                    "build",
+                    inputClass.absolutePath
+                )
+
+                // 设置工作目录
+                workingDir = project.projectDir
+
+                // 输出日志
+                //standardOutput = System.out
+                //errorOutput = System.err
+            }.result.get()
+
+            logger.lifecycle("✅ D8 conversion completed successfully")
+            logger.lifecycle("📁 Output directory: ${outputDir.absolutePath}")
+
+        } catch (e: Exception) {
+            throw GradleException("Failed to execute d8: ${e.message}", e)
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-    //val outputDir = getPath()
-    //println("Java编译输出目录: $outputDir")
-    //destinationDirectory.set(file("build/libs"))
-    //archiveFileName.set("merged.jar")
 }
 
-
-
 tasks.register("pythonToC") {
-    dependsOn("mergeJars")
+    dependsOn("convertToDex")
     doLast {
         val dexFile = file("build/classes.dex")
         val outputFile = file("../app/src/main/cpp/src/dex_data.h")

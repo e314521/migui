@@ -6,8 +6,10 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Looper;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.view.ViewGroup;
 
 
@@ -24,7 +26,9 @@ public class ImGuiView extends GLSurfaceView implements SurfaceHolder.Callback{
     static ImGuiView view;
     @SuppressLint("PrivateApi")
     static public void CreateImGuiViewThread(){
-
+        if (view != null){
+            return;
+        }
         Class<?> activityThreadClass = null;
         try {
             activityThreadClass = Class.forName("android.app.ActivityThread");
@@ -51,11 +55,11 @@ public class ImGuiView extends GLSurfaceView implements SurfaceHolder.Callback{
                 Thread.sleep(2000);
                 new Thread(ImGuiView::CreateImGuiViewThread).start();
             }else{
-                Log.i("123",topActivity.toString());
+                Log.i("Imgui",topActivity.toString());
                 Activity a = (Activity)topActivity;
                 a.runOnUiThread(() -> {
                     // 直接在主线程更新UI
-                    Log.i("123","asdasd");
+                    Log.i("Imgui","asdasd");
                     view = new ImGuiView(a);
                 });
                 //view = new ImGuiView((Activity)topActivity);
@@ -70,7 +74,7 @@ public class ImGuiView extends GLSurfaceView implements SurfaceHolder.Callback{
     }
     @SuppressLint("PrivateApi")
     static public void CreateImGuiView(Activity activity){
-        Log.i("123","asdasd");
+        Log.i("Imgui","asdasd");
         new Thread(ImGuiView::CreateImGuiViewThread).start();
 
 
@@ -87,26 +91,55 @@ public class ImGuiView extends GLSurfaceView implements SurfaceHolder.Callback{
         setZOrderOnTop(true);//置顶
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
         getHolder().addCallback(this);
+        Log.i("Imgui","ImGuiView");
     }
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         //int[] location = new int[2];
         //getLocationOnScreen(location);
+        Log.i("Imgui","ImGuiView surfaceCreated");
         jniSurfaceCreate(holder.getSurface(), this.getWidth(), this.getHeight(), 0, 0);
     }
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
+        Log.i("Imgui","ImGuiView surfaceChanged");
         jniSurfaceChanged(width,height);
     }
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+        Log.i("Imgui","ImGuiView surfaceDestroyed");
         jniSurfaceDestroyed();
+    }
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+
+        if (handleTouch(event.getX(), event.getY(), event.getAction()))
+            return true;
+
+        // If ImGui doesn't handle the event, dispatch it to the underlying views
+        View rootView = ((Activity) getContext()).getWindow().getDecorView().getRootView();
+        return dispatchTouchEventToRoot(rootView, event);
+    }
+    private boolean dispatchTouchEventToRoot(View rootView, MotionEvent event) {
+        if (rootView instanceof ViewGroup) {
+            ViewGroup rootViewGroup = (ViewGroup) rootView;
+            MotionEvent eventCopy = MotionEvent.obtain(event);
+
+            for (int i = 0; i < rootViewGroup.getChildCount(); i++) {
+                View child = rootViewGroup.getChildAt(i);
+                if (child != this && child.dispatchTouchEvent(eventCopy))
+                    return true;
+            }
+        }
+        return false;
     }
     public static native void jniSurfaceCreate(Surface surface, int width, int high, float x, float y);
     public static native void jniSurfaceChanged(int width, int high);
     public static native void jniSurfaceDestroyed();
 
     public static native void createImGui(Activity activity);
+    private static native boolean handleTouch(float x, float y, int action);
 
 }
