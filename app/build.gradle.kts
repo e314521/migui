@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.lsplant.standalone)
     implementation(libs.dobby)
     implementation(libs.androidx.activity)
+    implementation(project(":ImGuiView"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -11,6 +11,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.Gravity;
@@ -81,7 +82,7 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         Log.d(TAG, "onSurfaceChanged");
-        nativeOnSurfaceChanged(width, height);
+        nativeOnSurfaceChanged(getHolder().getSurface(), width, height);
     }
 
     @Override
@@ -101,6 +102,13 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
         // If ImGui doesn't handle the event, dispatch it to the underlying views
         View rootView = ((Activity) getContext()).getWindow().getDecorView().getRootView();
         return dispatchTouchEventToRoot(rootView, event);
+    }
+    @Override
+    public void surfaceDestroyed( SurfaceHolder holder) {
+        Log.i(TAG,"ImGuiView surfaceDestroyed");
+        super.surfaceDestroyed(holder);
+        nativeOnDestroyed();
+
     }
 
     private boolean dispatchTouchEventToRoot(View rootView, MotionEvent event) {
@@ -147,9 +155,10 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     private static native void nativeOnDrawFrame();
 
-    private static native void nativeOnSurfaceChanged(int width, int height);
+    private static native void nativeOnSurfaceChanged(Surface surface, int width, int height);
 
     private static native void nativeOnSurfaceCreated(Surface surface);
 
     private static native boolean handleTouch(float x, float y, int action);
+    private static native void nativeOnDestroyed();
 }

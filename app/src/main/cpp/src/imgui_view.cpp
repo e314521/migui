@@ -7,14 +7,18 @@
 #include "dex_data.h"
 
 static bool g_Initialized = false;
+static jobject g_surface = nullptr;
+ANativeWindow *g_NativeWindow;
 extern "C" void beginFrame();
 extern "C" void renderFrame();
 extern "C" void endFrame();
-extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceCreated(JNIEnv *env, jclass clazz, jobject surface) {
+void initSurface(JNIEnv *env, jobject surface)
+{
     if (g_Initialized)
         return;
-    ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-    if (!window)
+    g_surface = surface;
+    g_NativeWindow= ANativeWindow_fromSurface(env, surface);
+    if (!g_NativeWindow)
     {
         LOGE("ANativeWindow_fromSurface failed");
         return;
@@ -28,7 +32,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceCreate
     // ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplAndroid_Init(window);
+    ImGui_ImplAndroid_Init(g_NativeWindow);
     ImGui_ImplOpenGL3_Init("#version 300 es");
 
 //    ImFontConfig font_cfg;
@@ -51,18 +55,35 @@ extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceCreate
 
     LOGD("setup done");
 }
-extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width,
+void destroySurface(){
+    if(g_Initialized){
+        g_Initialized = false;
+        LOGD("destroySurface");
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplAndroid_Shutdown();
+        ImGui::DestroyContext();
+        ANativeWindow_release(g_NativeWindow);
+
+    }
+
+}
+extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceCreated(JNIEnv *env, jclass clazz, jobject surface) {
+
+}
+extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jobject surface, jint width,
                                                                        jint height) {
     LOGD("nativeOnSurfaceChanged");
-    if (!g_Initialized)
-        return;
+
+    initSurface(env,surface);
+
+
 
     ImGuiIO &io = ImGui::GetIO();
     io.DisplaySize = ImVec2((float)width, (float)height);
 }
 extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnDrawFrame(JNIEnv *env, jclass clazz)
 {
-    LOGD("nativeOnDrawFrame");
+    //LOGD("nativeOnDrawFrame");
 
     if (!g_Initialized)
         return;
@@ -101,10 +122,15 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_imgui_ImGuiView_handleTouch(JNIEn
 
     return io.WantCaptureMouse ? true : false;
 }
+extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnDestroyed(JNIEnv *env, jclass clazz) {
+    // TODO: implement nativeOnDestroyed()
+    destroySurface();
+}
 static JNINativeMethod methods[] = {
         {"nativeOnSurfaceCreated", "(Landroid/view/Surface;)V", (void*)Java_com_imgui_ImGuiView_nativeOnSurfaceCreated},
-        {"nativeOnSurfaceChanged", "(II)V", (void*)Java_com_imgui_ImGuiView_nativeOnSurfaceChanged},
+        {"nativeOnSurfaceChanged", "(Landroid/view/Surface;II)V", (void*)Java_com_imgui_ImGuiView_nativeOnSurfaceChanged},
         {"nativeOnDrawFrame", "()V", (void*)Java_com_imgui_ImGuiView_nativeOnDrawFrame},
+        {"nativeOnDestroyed", "()V", (void*)Java_com_imgui_ImGuiView_nativeOnDestroyed},
         {"handleTouch", "(FFI)Z", (void*)Java_com_imgui_ImGuiView_handleTouch}
 };
 
@@ -144,8 +170,8 @@ void beginFrame()
 {
     ImGuiIO &io = ImGui::GetIO();
 
-    LOGD("Start rendering...");
-    LOGD("DisplaySize: %f, %f", io.DisplaySize.x, io.DisplaySize.y);
+    //LOGD("Start rendering...");
+    //LOGD("DisplaySize: %f, %f", io.DisplaySize.x, io.DisplaySize.y);
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplAndroid_NewFrame();
@@ -170,29 +196,30 @@ void endFrame()
  */
 void renderFrame()
 {
-//    LOGD("renderFrame");
-//    static float f = 0.0f;
-//    static int counter = 0;
-//
-//    ImGuiIO &io = ImGui::GetIO();
-//
-//    ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
-//
-//    ImGui::Text(
-//            "This is some useful text."); // Display some text (you can use a format strings too)
-//
-//
-//    ImGui::SliderFloat("float", &f, 0.0f,
-//                       1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-//
-//
-//    if (ImGui::Button(
-//            "Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-//        counter++;
-//    ImGui::SameLine();
-//    ImGui::Text("counter = %d", counter);
-//
-//    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
-//                io.Framerate);
-//    ImGui::End();
+    //LOGD("renderFrame");
+    static float f = 0.0f;
+    static int counter = 0;
+
+    ImGuiIO &io = ImGui::GetIO();
+
+    ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
+
+    ImGui::Text(
+            "This is some useful text."); // Display some text (you can use a format strings too)
+
+
+    ImGui::SliderFloat("float", &f, 0.0f,
+                       1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+
+
+    if (ImGui::Button(
+            "Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
+        counter++;
+    ImGui::SameLine();
+    ImGui::Text("counter = %d", counter);
+
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
+                io.Framerate);
+    ImGui::End();
 }
+
