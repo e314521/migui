@@ -35,12 +35,6 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
 //    private final static String TMP_PATH = "/data/local/tmp";
 //    private final static String LIB_NAME = "libimgui.so";
 //
-    static {
-        Log.d(TAG, "MyGLSurfaceView");
-        //System.load(TMP_PATH + "/" + LIB_NAME);
-
-        //Log.d(TAG, "Loaded " + TMP_PATH + "/" + LIB_NAME);
-    }
 
     private final Activity ctx;
     private ViewGroup rootView;
@@ -72,7 +66,6 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
         getHolder().setFormat(TRANSPARENT);
         setZOrderOnTop(true);
         setRenderer(this);
-
         startMenu(ctx);
     }
 
@@ -104,6 +97,7 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
         MotionEvent eventCopy = MotionEvent.obtain(event);
         for (int i = 0; i < this.rootView.getChildCount(); i++) {
             View child = this.rootView.getChildAt(i);
+            Log.i(TAG,"ImGuiView onTouchEvent：" + child);
             if (child != this && child.dispatchTouchEvent(eventCopy))
                 return true;
         }

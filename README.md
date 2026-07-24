@@ -1,0 +1,2 @@
+.\gradlew push
+.\gradlew push
