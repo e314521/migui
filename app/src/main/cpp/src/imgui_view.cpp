@@ -6,12 +6,15 @@
 #include "tools.h"
 #include "dex_data.h"
 
+
 static bool g_Initialized = false;
 static jobject g_surface = nullptr;
 ANativeWindow *g_NativeWindow;
 extern "C" void beginFrame();
 extern "C" void renderFrame();
 extern "C" void endFrame();
+
+
 void initSurface(JNIEnv *env, jobject surface)
 {
     if (g_Initialized)
@@ -93,37 +96,71 @@ extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnDrawFrame(JNI
     endFrame();
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_imgui_ImGuiView_handleTouch(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jint action)
+// 几何碰撞检测
+bool IsPosInsideAnyImGuiWindow(float x, float y) {
+    ImGuiContext& g = *GImGui;
+    ImVec2 touch_pos = ImVec2(x, y);
+    for (int i = 0; i < g.Windows.Size; i++) {
+        ImGuiWindow* window = g.Windows[i];
+        if (window->WasActive && !window->Hidden && !(window->Flags & ImGuiWindowFlags_NoInputs)) {
+            if (window->Rect().Contains(touch_pos)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+extern "C" JNIEXPORT jboolean JNICALL Java_com_imgui_ImGuiView_handleTouch(JNIEnv *env, jclass clazz, jint action, jfloat x, jfloat y)
 {
+    if (!g_Initialized) return JNI_FALSE;
+    // 安全边界处理
 
 
-    if (!g_Initialized)
-        return false;
-
-    ImGuiIO &io = ImGui::GetIO();
-    switch (action)
-    {
-        case 0: // ACTION_DOWN
-            io.AddMousePosEvent(x, y);
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddMousePosEvent(x, y);
+    bool IsPosInside = IsPosInsideAnyImGuiWindow(x, y);
+    if(!IsPosInside){
+        if(GImGui->NavWindow && action == 0){
             io.AddMouseButtonEvent(0, true);
-            break;
-        case 1: // ACTION_UP
-            io.AddMousePosEvent(x, y);
             io.AddMouseButtonEvent(0, false);
+        }
+        return JNI_FALSE;
+    }
+    if (action == 0) { // MotionEvent.ACTION_DOWN
+        io.AddMouseButtonEvent(0, true);
+    }else if (action == 1 || action == 3) { // ACTION_UP 或 ACTION_CANCEL
+        io.AddMouseButtonEvent(0, false);
+    }
+    return JNI_TRUE;
 
-            break;
-        case 2: // ACTION_MOVE
-            io.AddMousePosEvent(x, y);
-            break;
-        default:
-            return false;
-            break;
-    }
-    LOGD("handleTouch{}:{},{},{}", x, y, action, io.WantCaptureMouse);
-    if (io.WantCaptureMouse) {
-        return JNI_TRUE; // 返回给 Java，通知系统拦截事件，不往下传递给 Unity
-    }
-    return JNI_FALSE; // 返回给 Java，允许事件穿透给底层的 Unity 游戏
+
+
+
+
+
+
+//    bool ret = IsPosInsideAnyImGuiWindow(x, y);
+//    LOGD("handleTouch action:{}, pointerId:{}, x:{}, y:{}, {}", action, pointerId, x, y, ret);
+//
+//
+//    // 将 Android 的 MotionEvent 坐标和动作传给 ImGui
+//
+//
+//    if (action == 0) { // MotionEvent.ACTION_DOWN
+//        g_PointerInterceptMap[pointerId] = ret;
+//        if(ret)
+//            io.MouseDown[0] = true;
+//
+//    } else if (action == 1 || action == 3) { // ACTION_UP 或 ACTION_CANCEL
+//        if(g_PointerInterceptMap[pointerId]){
+//            io.MouseDown[0] = false;
+//            g_PointerInterceptMap[pointerId] = false;
+//            return JNI_TRUE;
+//        }
+//    }
+//    return ret ? JNI_TRUE : JNI_FALSE;
+
 }
 extern "C" JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnDestroyed(JNIEnv *env, jclass clazz) {
     // TODO: implement nativeOnDestroyed()
@@ -134,13 +171,13 @@ static JNINativeMethod methods[] = {
         {"nativeOnSurfaceChanged", "(Landroid/view/Surface;II)V", (void*)Java_com_imgui_ImGuiView_nativeOnSurfaceChanged},
         {"nativeOnDrawFrame", "()V", (void*)Java_com_imgui_ImGuiView_nativeOnDrawFrame},
         {"nativeOnDestroyed", "()V", (void*)Java_com_imgui_ImGuiView_nativeOnDestroyed},
-        {"handleTouch", "(FFI)Z", (void*)Java_com_imgui_ImGuiView_handleTouch}
+        {"handleTouch", "(IFF)Z", (void*)Java_com_imgui_ImGuiView_handleTouch}
 };
 
 
 
 jint JNIEXPORT JNI_OnLoad(JavaVM *vm, void *key) {
-    LOGE("JNI_OnLoad");
+    LOGD("JNI_OnLoad");
     JNIEnv* env;
     if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
         return JNI_ERR;

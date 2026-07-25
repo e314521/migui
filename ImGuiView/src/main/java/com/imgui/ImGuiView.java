@@ -1,6 +1,7 @@
 package com.imgui;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +31,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+
 
 public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
     private final static String TAG = "ImGuiView";
@@ -66,6 +69,7 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
         getHolder().setFormat(TRANSPARENT);
         setZOrderOnTop(true);
         setRenderer(this);
+        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         startMenu(ctx);
     }
 
@@ -89,19 +93,22 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
         nativeOnDrawFrame();
     }
 
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d(TAG, "onTouchEvent");
-        if (handleTouch(event.getX(), event.getY(), event.getAction()))
-            return true;
-        MotionEvent eventCopy = MotionEvent.obtain(event);
-        for (int i = 0; i < this.rootView.getChildCount(); i++) {
-            View child = this.rootView.getChildAt(i);
-            Log.i(TAG,"ImGuiView onTouchEvent：" + child);
-            if (child != this && child.dispatchTouchEvent(eventCopy))
-                return true;
-        }
-        return true;
+        //return handleTouch(event.getX(), event.getY(), event.getAction());
+        int actionMasked = event.getActionMasked();
+
+        // 2. 获取当前触发动作的手指 Index
+        int actionIndex = event.getActionIndex();
+
+        // 3. 关键：获取该手指跨越时空的唯一 Pointer ID
+        int pointerId = event.getPointerId(actionIndex);
+        Log.d(TAG, "onTouchEvent:" + pointerId);
+        if(pointerId != 0)
+            return false;
+        return handleTouch(actionMasked, event.getX(), event.getY());
     }
 //    @Override
 //    public void surfaceDestroyed( SurfaceHolder holder) {
@@ -140,6 +147,6 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     private static native void nativeOnSurfaceCreated(Surface surface);
 
-    private static native boolean handleTouch(float x, float y, int action);
+    private static native boolean handleTouch(int action, float x, float y);
     private static native void nativeOnDestroyed();
 }

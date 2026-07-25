@@ -239,8 +239,7 @@ JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnDrawFrame(JNIEnv *env, j
     // TODO: implement nativeOnDrawFrame()
 }
 
-JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width,
-                                                jint height) {
+JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
     // TODO: implement nativeOnSurfaceChanged()
 }
 
@@ -248,7 +247,7 @@ JNIEXPORT void JNICALL Java_com_imgui_ImGuiView_nativeOnSurfaceCreated(JNIEnv *e
     // TODO: implement nativeOnSurfaceCreated()
 }
 
-JNIEXPORT jboolean JNICALL Java_com_imgui_ImGuiView_handleTouch(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jint action) {
+JNIEXPORT jboolean JNICALL Java_com_imgui_ImGuiView_handleTouch(JNIEnv *env, jclass clazz, jint action, jfloat x, jfloat y) {
     // TODO: implement handleTouch()
 }
 
