@@ -30,7 +30,7 @@ using namespace std;
 #define NATIVE_API __attribute__((visibility("default")))
 extern "C" {
 NATIVE_API void readXml(const char* text);
-NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size);
+NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size, int type);
 NATIVE_API void onDynamic(const char* name);
 }
 

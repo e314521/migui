@@ -180,6 +180,7 @@ const std::unordered_map<std::string, ImGuiEnum> XMLReader::tagnames = {{"begin"
                                                                         {"sliderfloat", ImGuiEnum::SLIDERFLOAT},
                                                                         {"sliderint", ImGuiEnum::SLIDERINT},
                                                                         {"inputfloat", ImGuiEnum::INPUTFLOAT},
+                                                                        {"inputint", ImGuiEnum::INPUTINT},
                                                                         {"inputtext", ImGuiEnum::INPUTTEXT},
                                                                         {"inputtextmultiline", ImGuiEnum::INPUTTEXTMULTILINE},
                                                                         {"treenode", ImGuiEnum::TREENODE},

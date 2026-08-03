@@ -146,11 +146,11 @@ bool XMLRenderer::onNodeBegin(XMLNode& node, XMLEventHandler& handler) {
 
         case ImGuiEnum::SLIDERFLOAT:
             eventTriggered = ImGui::SliderFloat(node.arg<std::string>("label").c_str(), (float*) getDynamicBind(node).ptr, node.arg<float>("min"),
-                                                node.arg<float>("max"));
+                                                node.arg<float>("max"), (node.args.contains("format") ? node.args["format"] : std::string("%.3f")).c_str());
             break;
         case ImGuiEnum::SLIDERINT:
             eventTriggered = ImGui::SliderInt(node.arg<std::string>("label").c_str(), (int*) getDynamicBind(node).ptr, node.arg<int>("min"),
-                                                node.arg<int>("max"), node.arg<std::string>("format").c_str());
+                                                node.arg<int>("max"), (node.args.contains("format") ? node.args["format"] : std::string("%d")).c_str());
             break;
 
         case ImGuiEnum::CHECKBOX:
@@ -179,9 +179,15 @@ bool XMLRenderer::onNodeBegin(XMLNode& node, XMLEventHandler& handler) {
         }
         case ImGuiEnum::INPUTFLOAT: {
             auto bind = getDynamicBind(node);
-            std::string fmt = node.args.contains("format") ? node.args["format"] : "%.3f";
             eventTriggered = ImGui::InputFloat(node.arg<std::string>("label").c_str(), (float*) bind.ptr, node.arg<float>("step"),
-                                               node.arg<float>("step_fast"), fmt.c_str(), node.flags);
+                                               node.arg<float>("step_fast"), (node.args.contains("format") ? node.args["format"] : std::string("%.3f")).c_str(), node.flags);
+
+            break;
+        }
+        case ImGuiEnum::INPUTINT: {
+            auto bind = getDynamicBind(node);
+            eventTriggered = ImGui::InputInt(node.arg<std::string>("label").c_str(), (int*) bind.ptr, node.arg<int>("step"),
+                                               node.arg<int>("step_fast"),  node.flags);
 
             break;
         }

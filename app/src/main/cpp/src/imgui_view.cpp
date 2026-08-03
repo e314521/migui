@@ -29,11 +29,41 @@ public:
     virtual void onEvent(ImXML::XMLNode& node) override {
         if (node.args.contains("dynamic")) {
             onDynamic(node.args.at("dynamic").c_str());
+            if (node.args.contains("max")){
+
+            }
         }
 
 
 
         ImXML::XMLDynamicBind bind = xml_renderer->getDynamicBind(node);
+
+        if(bind.type == ImXML::XMLDynamicBindType::Float){
+            if(node.args.contains("min")){
+                if (node.arg<float>("min") > *static_cast<float*>(bind.ptr)){
+                    *static_cast<float*>(bind.ptr) = node.arg<float>("min");
+                }
+            }
+            if(node.args.contains("max")){
+                if (node.arg<float>("max") < *static_cast<float*>(bind.ptr)){
+                    *static_cast<float*>(bind.ptr) = node.arg<float>("max");
+                }
+            }
+        }
+        if(bind.type == ImXML::XMLDynamicBindType::Int){
+            if(node.args.contains("min")){
+                if (node.arg<int>("min") > *static_cast<int*>(bind.ptr)){
+                    *static_cast<int*>(bind.ptr) = node.arg<int>("min");
+                }
+            }
+            if(node.args.contains("max")){
+                if (node.arg<int>("max") < *static_cast<int*>(bind.ptr)){
+                    *static_cast<int*>(bind.ptr) = node.arg<int>("max");
+                }
+            }
+        }
+
+
         if (bind.object){
             auto * imGuiValue = static_cast<ImGuiValue*>(bind.object);
             imGuiValue->updata(env);
@@ -287,8 +317,11 @@ NATIVE_API void readXml(const char* text){
     }
     xml_tree = xml_reader->readFromString(text);
 }
-NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size){
-    xml_renderer->addDynamicBind(std::string(name), {.ptr = ptr, .size=size});
+NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size, int type){
+    if (type >= static_cast<int>(ImXML::XMLDynamicBindType::Float) &&
+            type <= static_cast<int>(ImXML::XMLDynamicBindType::Chars)) {
+        xml_renderer->addDynamicBind(std::string(name), {.ptr = ptr, .size=size, .type=static_cast<ImXML::XMLDynamicBindType>(type)});
+    }
 }
 
 NATIVE_API void onDynamic(const char* name){

@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private ImGuiValue str3 = new ImGuiValue("str3");
     private ImGuiValue color0 = new ImGuiValue(1);
     private ImGuiValue color1 = new ImGuiValue(1);
+
+    private ImGuiValue int0 = new ImGuiValue(1);
     private ImGuiValue bool0 = new ImGuiValue(true);
     static {
         System.loadLibrary("imgui");
@@ -81,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         ImGuiView.addDynamicBind("color0",this.color0);
         ImGuiView.addDynamicBind("color1",this.color1);
         ImGuiView.addDynamicBind("bool0",this.bool0);
+        ImGuiView.addDynamicBind("int0",this.int0);
         ImGuiView.readXml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "\n" +
                 "<begin name=\"你是谁你是谁\" flags=\"ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AutoCollapsed | ImGuiWindowFlags_AlwaysAutoResize\">\n" +
@@ -135,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
                 "\t\t\t\t\t<selectable label=\"Option 3\" selected=\"false\" />\n" +
                 "\t\t\t\t\t<selectable label=\"Option 4\" selected=\"false\" />\n" +
                 "\t\t\t\t</combo>\n" +
-                "\t\t\t\t<inputfloat label=\"Input float\" dynamic=\"float1\" step=\"0.1\" step_fast=\"0.25\" format=\"%.4f\"/>\n" +
+                "\t\t\t\t<inputfloat label=\"Input float\" dynamic=\"float1\" step=\"0.1\" step_fast=\"0.25\" min=\"0.25\" max=\"1\" format=\"%.4f\"/>\n" +
+                "\t\t\t\t<inputint label=\"Input int\" dynamic=\"int0\" step=\"1\" step_fast=\"10\" min=\"1\" max=\"100\"/>\n" +
                 "\t\t\t\t<checkbox label=\"Checkbox\" dynamic=\"bool0\"/>\n" +
                 "\t\t\t</column>\n" +
                 "\t\t</row>\n" +
