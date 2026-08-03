@@ -38,9 +38,10 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
 //    private final static String TMP_PATH = "/data/local/tmp";
 //    private final static String LIB_NAME = "libimgui.so";
 //
-
     private final Activity ctx;
     private ViewGroup rootView;
+
+
 
     public ImGuiView(Activity ctx) {
         super(ctx);
@@ -69,14 +70,13 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
         getHolder().setFormat(TRANSPARENT);
         setZOrderOnTop(true);
         setRenderer(this);
-        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        //setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         startMenu(ctx);
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
-
         nativeOnSurfaceCreated(getHolder().getSurface());
     }
 
@@ -88,7 +88,7 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        //Log.d(TAG, "onDrawFrame");
+        //Log.d(TAG, String.valueOf(float1.Float) );
 
         nativeOnDrawFrame();
     }
@@ -105,7 +105,7 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
         // 3. 关键：获取该手指跨越时空的唯一 Pointer ID
         int pointerId = event.getPointerId(actionIndex);
-        Log.d(TAG, "onTouchEvent:" + pointerId);
+        //Log.d(TAG, "onTouchEvent:" + pointerId);
         if(pointerId != 0)
             return false;
         return handleTouch(actionMasked, event.getX(), event.getY());
@@ -142,11 +142,11 @@ public class ImGuiView extends GLSurfaceView implements GLSurfaceView.Renderer {
     }
 
     private static native void nativeOnDrawFrame();
-
     private static native void nativeOnSurfaceChanged(Surface surface, int width, int height);
-
     private static native void nativeOnSurfaceCreated(Surface surface);
-
     private static native boolean handleTouch(int action, float x, float y);
+    public static native boolean readXml(String text);
+    public static native boolean addDynamicBind(String text, ImGuiValue Value);
+
     private static native void nativeOnDestroyed();
 }

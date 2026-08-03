@@ -19,7 +19,19 @@
 #include "external-lib/ImGui/imgui_impl_opengl3.h"
 #include "external-lib/ImGui/imgui_impl_android.h"
 #include "android/native_window_jni.h"
+#include "external-lib/ImGui/XMLDynamicBind.h"
+#include "external-lib/ImGui/XMLEventHandler.h"
+#include "external-lib/ImGui/XMLReader.h"
+#include "external-lib/ImGui/XMLRenderer.h"
+#include "external-lib/ImGui/XMLTree.h"
+#include "external-lib/ImGui/ImGuiValue.h"
 
 using namespace std;
+#define NATIVE_API __attribute__((visibility("default")))
+extern "C" {
+NATIVE_API void readXml(const char* text);
+NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size);
+NATIVE_API void onDynamic(const char* name);
+}
 
 #endif //IMGUI_DEMO_IMGUI_VIEW_H

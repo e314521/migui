@@ -12,6 +12,8 @@ cmake_minimum_required(VERSION 3.22.1)
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
 project("imgui")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+set(CMAKE_CXX_STANDARD 20)
 add_subdirectory(${EXTERNAL_ROOT} external)
 
 
@@ -39,14 +41,17 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         src/external-lib/ImGui/imgui_demo.cpp
         src/external-lib/ImGui/imgui_impl_opengl3.cpp
         src/external-lib/ImGui/imgui_impl_android.cpp
+        src/external-lib/ImGui/XMLReader.cpp
+        src/external-lib/ImGui/XMLTree.cpp
+        src/external-lib/ImGui/XMLRenderer.cpp
+        src/external-lib/ImGui/ImGuiValue.cpp
 )
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
 
-find_package(dobby REQUIRED CONFIG)
-find_package(lsplant REQUIRED CONFIG)
+# target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -fvisibility=default)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library

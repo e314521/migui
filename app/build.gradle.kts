@@ -13,6 +13,9 @@ android {
         versionName = "1.0"
         targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters.add("arm64-v8a")
+        }
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++17"
@@ -68,7 +71,7 @@ tasks.register("push") {
                 adbPath.absolutePath,
                 "push",
                 soPath,
-                "/data/local/tmp/com.pinkcore.heros"
+                "/data/local/tmp/com.yydwlxqcy02.weilan"
             )
 
             // 设置工作目录
@@ -96,7 +99,7 @@ tasks.register("pushDebug") {
                 adbPath.absolutePath,
                 "push",
                 soPath,
-                "/data/local/tmp/com.pinkcore.heros"
+                "/data/local/tmp/com.yydwlxqcy02.weilan"
             )
 
             // 设置工作目录

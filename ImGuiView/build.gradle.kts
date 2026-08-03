@@ -53,11 +53,26 @@ tasks.register("convertToDex") {
         // 构建完整的 d8 路径
         val d8Path = sdkPath.resolve("build-tools/$buildToolsVersion/d8.bat")
         val androidJar = sdkPath.resolve("platforms/$compileSdk/android.jar")
+        val classDir =layout.buildDirectory.file("intermediates/javac/release/compileReleaseJavaWithJavac/classes/com/imgui/")
+        logger.lifecycle("classDir: ${classDir}")
+        val classFiles: FileTree = (fileTree(classDir).include("*.class") as FileTree)
+        val files: List<File> = classFiles.files.toList()
+        val filePathsArray: Array<String> = files.map { it.absolutePath }.toTypedArray()
+//
+//        var files = ""
+//        classFiles.forEach { file: File ->
+//            files = files + file.absolutePath + " "
+//        }
+
 
 
         // 输入文件
         val inputClass = layout.buildDirectory
             .file("intermediates/javac/release/compileReleaseJavaWithJavac/classes/com/imgui/ImGuiView.class")
+            .get().asFile
+
+        val inputClass1 = layout.buildDirectory
+            .file("intermediates/javac/release/compileReleaseJavaWithJavac/classes/com/imgui/ImGuiValue.class")
             .get().asFile
 
         // 输出目录
@@ -79,6 +94,7 @@ tasks.register("convertToDex") {
         logger.lifecycle("Using d8: ${d8Path.absolutePath}")
         logger.lifecycle("Android JAR: ${androidJar.absolutePath}")
         logger.lifecycle("Input: ${inputClass.absolutePath}")
+        logger.lifecycle("Input: ${files}")
 
         // 执行 d8 命令
         try {
@@ -89,7 +105,7 @@ tasks.register("convertToDex") {
                     androidJar.absolutePath,
                     "--output",
                     "build",
-                    inputClass.absolutePath
+                    *filePathsArray
                 )
 
                 // 设置工作目录

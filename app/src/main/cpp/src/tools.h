@@ -42,6 +42,18 @@ jstring getCacheDir(JNIEnv* env, jobject context) {
     jobject CacheDir = (jstring)env->CallObjectMethod(context, getCacheDir);
     return (jstring)getFilePath(env,CacheDir);
 }
+
+jstring getFilesDir(JNIEnv* env, jobject context) {
+    jclass contextClass = env->FindClass("android/content/Context");
+    jmethodID getFilesDirMethod = env->GetMethodID(
+            contextClass,
+            "getFilesDir",
+            "()Ljava/io/File;"
+    );
+    jobject filesDirObj = env->CallObjectMethod(context, getFilesDirMethod);
+    return (jstring)getFilePath(env, filesDirObj);
+}
+
 jclass DexLoaderClass(JNIEnv* env, jobject context, jstring name) {
     jclass contextClass = env->GetObjectClass(context);
     jmethodID loadClass = env->GetMethodID(
