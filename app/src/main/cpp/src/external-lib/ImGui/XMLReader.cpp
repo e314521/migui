@@ -1,6 +1,6 @@
 #include "XMLReader.h"
 #include <sstream>
-#include "../../logging.h"
+//#include "../../logging.h"
 namespace ImXML {
 // trim from end of string (right)
 inline std::string& XMLReader::rtrim(std::string& s, const char* t) {
@@ -63,7 +63,7 @@ XMLNode* XMLReader::stringToNode(std::string& str) {
 
     auto prefix = m.str(0);
     auto name = toLower(prefix.substr(1, prefix.length() - 1));
-    LOGI("{}",prefix);
+    //LOGI("{}",prefix);
     XMLNode* node = new XMLNode;
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     if (tagnames.find(name) == tagnames.end()) {
@@ -89,6 +89,11 @@ XMLNode* XMLReader::stringToNode(std::string& str) {
             }
         }
         searchStart = m.suffix().first;
+    }
+    if (node->type == ImGuiEnum::BEGIN){
+        if(node->args.contains("x") && node->args.contains("y")){
+            node->pos = ImVec2(node->arg<float>("x"), node->arg<float>("y"));
+        }
     }
     return node;
 }

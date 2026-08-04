@@ -9,8 +9,6 @@ bool XMLRenderer::onNodeBegin(XMLNode& node, XMLEventHandler& handler) {
 
     bool shouldRenderChildren = true;
     bool eventTriggered = false;
-
-
     switch (node.type) {
         // Layout & Formatting
         case ImGuiEnum::COLUMN:
@@ -67,6 +65,11 @@ bool XMLRenderer::onNodeBegin(XMLNode& node, XMLEventHandler& handler) {
             break;
 
         case ImGuiEnum::BEGIN:
+            ImGui::SetNextWindowPos(node.pos, ImGuiCond_FirstUseEver);
+
+            //ImGui::SetWindowCollapsed(true,ImGuiCond_FirstUseEver);
+
+            //ImGui::SetNextWindowPos(center_pos, ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
 
             shouldRenderChildren = ImGui::Begin(node.args["name"].c_str(), nullptr, node.flags);
             if (node.flags & ImGuiWindowFlags_AutoCollapsed){

@@ -21,6 +21,7 @@ struct XMLNode {
     int flags = 0;
     int childflags = 0;  //only if node is "child"
     ImVec2 size{0, 0};
+    ImVec2 pos{0, 0};
     bool hide = false;
     std::vector<XMLNode*> children;
     //Empty for non table nodes

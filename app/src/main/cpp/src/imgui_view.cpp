@@ -29,9 +29,6 @@ public:
     virtual void onEvent(ImXML::XMLNode& node) override {
         if (node.args.contains("dynamic")) {
             onDynamic(node.args.at("dynamic").c_str());
-            if (node.args.contains("max")){
-
-            }
         }
 
 
@@ -324,7 +321,9 @@ NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size, i
     }
 }
 
+@Keep
 NATIVE_API void onDynamic(const char* name){
+    //LOGI("onDynamic:{}", name);
     volatile int dummy_sum = 0;
     for (int i = 0; i < 10; ++i) {
         dummy_sum += (i * 3) ^ 0xAA;

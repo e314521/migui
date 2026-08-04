@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         ImGuiView.addDynamicBind("int0",this.int0);
         ImGuiView.readXml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "\n" +
-                "<begin name=\"你是谁你是谁\" flags=\"ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AutoCollapsed | ImGuiWindowFlags_AlwaysAutoResize\">\n" +
+                "<begin name=\"你是谁你是谁\" flags=\"ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AutoCollapsed | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing\" x=\"200\" y=\"200\">\n" +
                 "\t<menubar>\n" +
                 "\t\t<menu label=\"File\">\n" +
                 "\t\t\t<menuitem label=\"New...\"/>\n" +
