@@ -27,7 +27,7 @@
 #include "external-lib/ImGui/ImGuiValue.h"
 
 using namespace std;
-#define NATIVE_API __attribute__((visibility("default")))
+#define NATIVE_API __attribute__((visibility("default"))) __attribute__((optnone))
 extern "C" {
 NATIVE_API void readXml(const char* text);
 NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size, int type);

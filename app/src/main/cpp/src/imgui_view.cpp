@@ -321,14 +321,7 @@ NATIVE_API void addDynamicBind(const char* name,void * ptr, unsigned int size, i
     }
 }
 
-@Keep
+
 NATIVE_API void onDynamic(const char* name){
-    //LOGI("onDynamic:{}", name);
-    volatile int dummy_sum = 0;
-    for (int i = 0; i < 10; ++i) {
-        dummy_sum += (i * 3) ^ 0xAA;
-    }
-    if (dummy_sum == 0x7FFFFFFF) {
-        LOGI("LOG: %d", dummy_sum);
-    }
+
 }
