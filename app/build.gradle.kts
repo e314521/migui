@@ -51,7 +51,7 @@ android {
 
 tasks.named("preBuild") {
     //dependsOn(":ImGuiView:assembleDebug")
-    dependsOn(":ImGuiView:convertToDex")
+    //dependsOn(":ImGuiView:convertToDex")
     dependsOn(":ImGuiView:pythonToC")
 
 

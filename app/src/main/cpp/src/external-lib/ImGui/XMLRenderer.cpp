@@ -6,6 +6,14 @@ namespace ImXML {
 
 bool XMLRenderer::onNodeBegin(XMLNode& node, XMLEventHandler& handler) {
     handler.onNodeBegin(node);
+    float width = node.arg<float>("width");
+    if (width > 0){
+        if (node.type == ImGuiEnum::BEGIN){
+
+        }else{
+            ImGui::SetNextItemWidth(width);
+        }
+    }
 
     bool shouldRenderChildren = true;
     bool eventTriggered = false;
@@ -66,11 +74,6 @@ bool XMLRenderer::onNodeBegin(XMLNode& node, XMLEventHandler& handler) {
 
         case ImGuiEnum::BEGIN:
             ImGui::SetNextWindowPos(node.pos, ImGuiCond_FirstUseEver);
-
-            //ImGui::SetWindowCollapsed(true,ImGuiCond_FirstUseEver);
-
-            //ImGui::SetNextWindowPos(center_pos, ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
-
             shouldRenderChildren = ImGui::Begin(node.args["name"].c_str(), nullptr, node.flags);
             if (node.flags & ImGuiWindowFlags_AutoCollapsed){
                 if(shouldRenderChildren){
